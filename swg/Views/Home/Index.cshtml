@@ -1,0 +1,107 @@
+﻿@using swg.Models;
+@model OperationModel
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    var resultButtonId = "GetResult";
+}
+<h2>Index</h2>
+
+<div class="container" style="padding-top: 1em;">
+    @using (@Ajax.BeginForm("MakeOperation", "Home", new AjaxOptions { OnSuccess = "onMakeOperationSuccess" })) {
+        <div class="row">
+            <div class="col-md-6" id="Parameters">
+                <div class="form-group">
+                    <label for="arg1">Argument1</label>
+                    <input type="number" name="arg1" class="form-control" />
+                </div>
+                <div class="form-group form-inline">
+                    <label for="OperationName">Operation</label>
+                    @Html.DropDownListFor(p => p.OperationName, new SelectList(Model.Operations, "value", "text"), new { @class = "form-control", id = "Operations" })
+                </div>
+                <div class="form-group">
+                    <label for="arg2">Argument2</label>
+                    <input type="number" name="arg2" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-default">Calcuate</button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" id="@resultButtonId" class="btn btn-default" disabled="disabled" data-url-action="@Url.Action("GetResult", "Home")">Get result</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="OperationResult">Result</label>
+                <input id="OperationResult" disabled="disabled" class="form-control" />
+            </div>
+
+        </div>
+    }
+</div>
+@section scripts{
+    <script>
+        var resultDataKeyName = "storeResultKey";
+        var resultButtonId = "@resultButtonId";
+
+        $(document).ready(function() {
+            $("#Parameters").keyup(disableGetResultButton);
+            $("#Operations").change(disableGetResultButton);
+            var resultButton = getResultButton().click(getResult);
+        })
+
+        function onParameterChanged() {
+            disableGetResultButton();
+
+        }
+
+        function getResultButton() {
+            return $("#" + resultButtonId);
+        }
+
+        function getResultInput() {
+            return $("#OperationResult");
+        }
+
+        function onMakeOperationSuccess(result) {
+            if (result && result.StoreResultKey != null) {
+                getResultButton().data(resultDataKeyName, result.StoreResultKey);
+                enableGetResultButton();
+            }
+        }
+        function disableGetResultButton() {
+            setGetResultButtonProp(true);
+        }
+
+        function enableGetResultButton() {
+            setGetResultButtonProp(false);
+        }
+        function setGetResultButtonProp(flag) {
+            getResultButton().prop("disabled", flag);
+        }
+
+        function getResult(e) {
+            var target = $(e.target);
+            var key = target.data(resultDataKeyName);
+            var url = target.data("url-action");
+            $.ajax({
+                method: "GET",
+                data: { "key": key },
+                url: url,
+                success: onGetResultSuccess
+            });
+        }
+
+        function onGetResultSuccess(result) {
+            if (result && result.StoredResult != null) {
+                getResultInput().val(result.StoredResult);
+            }
+        }
+
+    </script>
+}
