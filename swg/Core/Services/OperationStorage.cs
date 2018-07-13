@@ -1,23 +1,22 @@
-﻿using swg.Attributes.Core.Attributes;
+﻿using Autofac;
+using swg.Attributes.Core.Attributes;
 using swg.Core.Creators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
 
 namespace swg.Core.Services {
-    public class OperationService {
+    public class OperationStorage: IOperationStorage {
 
         private IDictionary<string, IOperationCreator> _allOperations;
         private static object _locker = new object();
+        private static OperationStorage _instance;
 
-        public OperationService() {
-            lock(_locker) {
-                _allOperations = new Dictionary<string, IOperationCreator>();
-            }
+        private OperationStorage() {
+           _allOperations = new Dictionary<string, IOperationCreator>();
         }
 
-        public void Init(IDependencyResolver resolver) {
+        private void Init(IComponentContext resolver) {
             var allOperationTypes = this.GetType().Assembly.GetTypes()
                 .Where(x => x.GetCustomAttributes(typeof(OperationAttribute), false) != null && x.BaseType  == typeof(OperationCreator))
                 .Select(x =>
@@ -26,9 +25,22 @@ namespace swg.Core.Services {
                             OperationType = x
                         });
             foreach (var type in allOperationTypes) {
-                var creator = resolver.GetService(type.OperationType) as IOperationCreator;
+                var creator = resolver.Resolve(type.OperationType) as IOperationCreator;
                 AddOperation(type.OperationName, creator);
             }
+        }
+
+        public static IOperationStorage GetInstance(IComponentContext resolver) {
+            if (_instance != null) {
+                return _instance;
+            }
+            lock (_locker) {
+                if (_instance == null) {
+                    _instance = new OperationStorage();
+                    _instance.Init(resolver);
+                }
+            }
+            return _instance;
         }
 
         public void AddOperation(string operationName, IOperationCreator creator) {

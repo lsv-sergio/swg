@@ -157,10 +157,11 @@
     <Compile Include="Core\Operations\AddOperation.cs" />
     <Compile Include="Core\Operations\IOperation.cs" />
     <Compile Include="Core\Services\IOperationLogger.cs" />
+    <Compile Include="Core\Services\IOperationStorage.cs" />
     <Compile Include="Core\Stubs\OperationLoggerStub.cs" />
     <Compile Include="Core\Stubs\ResultStorageStub.cs" />
     <Compile Include="Core\Services\IResultStorage.cs" />
-    <Compile Include="Core\Services\OperationService.cs" />
+    <Compile Include="Core\Services\OperationStorage.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

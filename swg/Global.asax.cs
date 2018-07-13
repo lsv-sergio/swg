@@ -1,5 +1,6 @@
 ﻿using swg.Core.Autofac;
 using swg.Core.Services;
+using swg.Core.Stub;
 using System;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -15,12 +16,12 @@ namespace swg {
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             DependencyResolver.SetResolver(AutofacConfig.BuildContainer());
-        
-            var operationService = DependencyResolver.Current.GetService(typeof(OperationService)) as OperationService;
-            operationService.Init(DependencyResolver.Current);
         }
+
         protected void Application_End() {
-            //var a = DependencyResolver.Current.GetService(typeof(IOperationLogger)) as IDisposable;
+            var logger = OperationLoggerStub.GetInstance() as IDisposable;
+            logger?.Dispose();
         }
+
     }
 }

@@ -17,11 +17,24 @@ namespace swg.Core.Stub {
 
         private bool disposed = false;
 
-        public OperationLoggerStub() {
+        private static OperationLoggerStub _instance;
+
+        private OperationLoggerStub() {
             var fileName = HttpContext.Current.Server.MapPath("~/Log/operation_log.txt");
             lock (_locker) {
                 _writer = File.CreateText(fileName);
             }
+        }
+
+        public static OperationLoggerStub GetInstance() {
+            if (_instance == null) {
+                lock(_locker) {
+                    if (_instance == null) {
+                        _instance = new OperationLoggerStub();
+                    }
+                }
+            }
+            return _instance;
         }
 
         public Task WriteOperationLogAsync(OperationLogParameter parameters) {
@@ -29,9 +42,10 @@ namespace swg.Core.Stub {
                 if (_writer != null) {
                     lock (_locker) {
                         if (_writer != null) {
-                            _writer.WriteLine($"{DateTime.Now} - {parameters.Argument1} {parameters.Operation.OperationName} {parameters.Argument2} = {parameters.OperationResult}");
+                            _writer.WriteLine($"{DateTime.Now} {parameters.SessionId} - {parameters.Argument1} {parameters.Operation.OperationName} {parameters.Argument2} = {parameters.OperationResult}");
                             if (++_rowCount == 5) {
                                 _writer.Flush();
+                                _rowCount = 0;
                             }
                         }
                     }

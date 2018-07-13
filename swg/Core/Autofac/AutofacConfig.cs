@@ -8,15 +8,21 @@ using System.Linq;
 
 namespace swg.Core.Autofac {
     public class AutofacConfig {
+
         public static AutofacDependencyResolver BuildContainer() {
+
             var builder = new ContainerBuilder();
             builder.RegisterControllers(typeof(MvcApplication).Assembly);
             builder.RegisterTypes(typeof(MvcApplication).Assembly.GetTypes().Where(x => x.BaseType == typeof(OperationCreator)).ToArray());
-            builder.RegisterType<OperationService>().AsSelf().SingleInstance();
+            builder.RegisterType<OperationStorage>().As<IOperationStorage>().SingleInstance();
             builder.RegisterType<ResultStorageStub>().As<IResultStorage>().SingleInstance();
-            builder.RegisterType<OperationLoggerStub>().As<IOperationLogger>().SingleInstance().OnRelease(t => t.Dispose());
+            var logger = OperationLoggerStub.GetInstance();
+            builder.RegisterInstance(logger).As<IOperationLogger>().SingleInstance().ExternallyOwned();
+            builder.Register(c => OperationStorage.GetInstance(c)).As<IOperationStorage>().SingleInstance();
+
             var container = builder.Build();
-            return new AutofacDependencyResolver(container);
+            var resolver = new AutofacDependencyResolver(container);
+            return resolver;
         }
     }
 }

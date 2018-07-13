@@ -50,14 +50,14 @@
         var resultButtonId = "@resultButtonId";
 
         $(document).ready(function() {
-            $("#Parameters").keyup(disableGetResultButton);
-            $("#Operations").change(disableGetResultButton);
+            $("#Parameters").keyup(onParameterChanged);
+            $("#Operations").change(onParameterChanged);
             var resultButton = getResultButton().click(getResult);
         })
 
         function onParameterChanged() {
             disableGetResultButton();
-
+            getResultInput().val("");
         }
 
         function getResultButton() {

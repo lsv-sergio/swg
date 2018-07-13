@@ -9,11 +9,11 @@ using System.Web.Mvc;
 namespace swg.Controllers {
     public class HomeController : Controller
     {
-        private readonly OperationService _operationService;
+        private readonly IOperationStorage _operationService;
         private readonly IResultStorage _storage;
         private readonly IOperationLogger _logger;
 
-        public HomeController(OperationService operationService, IResultStorage storage, IOperationLogger logger) {
+        public HomeController(IOperationStorage operationService, IResultStorage storage, IOperationLogger logger) {
             _operationService = operationService;
             _storage = storage;
             _logger = logger; 
@@ -35,7 +35,7 @@ namespace swg.Controllers {
             var result = operation.Execute(arg1, arg2);
             var storeKey = await _storage.SaveResultToStorage(result);
             if (_logger != null) {
-                await _logger.WriteOperationLogAsync(OperationLogParameter.Create(operation, arg1, arg2, result));
+                await _logger.WriteOperationLogAsync(OperationLogParameter.Create(operation, arg1, arg2, result, this.HttpContext.Session.SessionID));
             }
 
             return Json(new { StoreResultKey = storeKey });
