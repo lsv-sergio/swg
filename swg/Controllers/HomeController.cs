@@ -35,9 +35,8 @@ namespace swg.Controllers {
             var result = operation.Execute(arg1, arg2);
             var storeKey = await _storage.SaveResultToStorage(result);
             if (_logger != null) {
-                await _logger.WriteOperationLogAsync(OperationLogParameter.Create(operation, arg1, arg2, result, this.HttpContext.Session.SessionID));
+                await _logger.WriteOperationLogAsync(OperationLogParameter.Create(operation, arg1, arg2, result, HttpContext?.Session?.SessionID));
             }
-
             return Json(new { StoreResultKey = storeKey });
         }
 

@@ -16,36 +16,32 @@ namespace swg.Core.Services {
            _allOperations = new Dictionary<string, IOperationCreator>();
         }
 
-        private void Init(IComponentContext resolver) {
-            var allOperationTypes = this.GetType().Assembly.GetTypes()
-                .Where(x => x.GetCustomAttributes(typeof(OperationAttribute), false) != null && x.BaseType  == typeof(OperationCreator))
-                .Select(x =>
-                        new {
-                            OperationName = x.CustomAttributes.First(y => y.AttributeType == typeof(OperationAttribute)).ConstructorArguments.First().Value.ToString(),
-                            OperationType = x
-                        });
-            foreach (var type in allOperationTypes) {
-                var creator = resolver.Resolve(type.OperationType) as IOperationCreator;
-                AddOperation(type.OperationName, creator);
-            }
-        }
-
-        public static IOperationStorage GetInstance(IComponentContext resolver) {
+        public static IOperationStorage GetInstance() {
             if (_instance != null) {
                 return _instance;
             }
             lock (_locker) {
                 if (_instance == null) {
                     _instance = new OperationStorage();
-                    _instance.Init(resolver);
                 }
             }
             return _instance;
         }
 
-        public void AddOperation(string operationName, IOperationCreator creator) {
-            if (String.IsNullOrEmpty(operationName) || creator == null) {
-                throw new ArgumentNullException("Operation name or operatoin type is null");
+        public void AddOperationCreators(IEnumerable<IOperationCreator> creators) {
+            if (creators == null) {
+                throw new ArgumentNullException("array of creators");
+            }
+            foreach (var creator in creators) {
+               
+                AddOperationCreator(creator);
+            }
+        }
+
+        public void AddOperationCreator(IOperationCreator creator) {
+            var operationName = creator?.GetOperationName();
+            if (String.IsNullOrEmpty(operationName)) {
+                throw new ArgumentNullException("Operation name or operatin's creator is null");
             }
             lock (_locker) {
                 _allOperations[operationName] = creator;

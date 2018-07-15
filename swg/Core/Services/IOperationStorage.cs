@@ -1,10 +1,13 @@
 ﻿using swg.Core.Creators;
+using System;
 using System.Collections.Generic;
 
 namespace swg.Core.Services {
     public interface IOperationStorage {
 
-        void AddOperation(string operationName, IOperationCreator creator);
+        void AddOperationCreator(IOperationCreator creator);
+
+        void AddOperationCreators(IEnumerable<IOperationCreator> operations);
 
         IEnumerable<string> GetAllOperationNames();
 
